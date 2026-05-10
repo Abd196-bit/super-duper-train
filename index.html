@@ -3,206 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GBA Emulator - Leaf Green</title>
+    <title>GBA Emulator - Pokemon Leaf Green</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+        html, body {
+            background: #000;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
         body {
-            background: #1a1a2e;
-            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', sans-serif;
-            color: white;
-        }
-        h1 {
-            margin-bottom: 20px;
-            color: #eee;
-        }
-        #game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
         }
         #canvas {
-            border: 4px solid #333;
-            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+            max-width: 100vw;
+            max-height: 100vh;
             image-rendering: pixelated;
             background: #000;
         }
-        .controls {
-            display: flex;
-            gap: 40px;
-            align-items: center;
-            padding: 20px;
-        }
-        .dpad {
-            display: grid;
-            grid-template-columns: repeat(3, 60px);
-            grid-template-rows: repeat(3, 60px);
-            gap: 5px;
-        }
-        .dpad button {
-            width: 60px;
-            height: 60px;
-            border: none;
-            border-radius: 8px;
-            background: #333;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.1s;
-        }
-        .dpad button:active, .dpad button.active {
-            background: #555;
-            transform: scale(0.95);
-        }
-        .dpad .up { grid-column: 2; grid-row: 1; }
-        .dpad .left { grid-column: 1; grid-row: 2; }
-        .dpad .right { grid-column: 3; grid-row: 2; }
-        .dpad .down { grid-column: 2; grid-row: 3; }
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .action-row {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        .action-buttons button {
-            width: 70px;
-            height: 70px;
-            border: none;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.1s;
-        }
-        .btn-b { background: #ff6b6b; color: white; }
-        .btn-a { background: #4ecdc4; color: white; }
-        .btn-select, .btn-start { 
-            background: #95a5a6; 
-            color: #333;
-            width: 80px;
-            height: 30px;
-            border-radius: 15px;
-            font-size: 12px;
-        }
-        .action-buttons button:active, .action-buttons button.active {
-            transform: scale(0.95);
-            filter: brightness(0.8);
-        }
-        .system-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .system-buttons button {
+        #controls-legend {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
             padding: 12px 24px;
-            border: none;
             border-radius: 8px;
-            background: #2c3e50;
-            color: white;
-            cursor: pointer;
+            font-family: 'Segoe UI', sans-serif;
             font-size: 14px;
-            transition: all 0.2s;
+            color: #fff;
+            white-space: nowrap;
+            z-index: 100;
         }
-        .system-buttons button:hover {
-            background: #34495e;
-        }
-        .system-buttons button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        #rom-input {
-            display: none;
-        }
-        .keyboard-help {
-            margin-top: 15px;
-            font-size: 12px;
-            color: #888;
-            text-align: center;
-        }
-        .keyboard-help kbd {
-            background: #333;
-            padding: 2px 8px;
+        #controls-legend kbd {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
             border-radius: 4px;
             font-family: monospace;
+            margin: 0 2px;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 24px;
+            z-index: 200;
         }
     </style>
 </head>
 <body>
-    <h1>GBA Emulator - Pokemon Leaf Green</h1>
-    <div id="game-container">
-        <canvas id="canvas" width="240" height="160"></canvas>
-        
-        <div class="controls">
-            <div class="dpad">
-                <button class="up" data-key="up">▲</button>
-                <button class="left" data-key="left">◀</button>
-                <button class="right" data-key="right">▶</button>
-                <button class="down" data-key="down">▼</button>
-            </div>
-            
-            <div class="action-buttons">
-                <div class="action-row">
-                    <button class="btn-b" data-key="b">B</button>
-                    <button class="btn-a" data-key="a">A</button>
-                </div>
-                <div class="action-row">
-                    <button class="btn-select" data-key="select">SELECT</button>
-                    <button class="btn-start" data-key="start">START</button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="system-buttons">
-            <button id="load-btn">Load ROM</button>
-            <button id="start-btn" disabled>Start</button>
-            <button id="reset-btn">Reset</button>
-        </div>
-        
-        <input type="file" id="rom-input" accept=".gba,.zip">
-        
-        <div class="keyboard-help">
-            <p><strong>Keyboard Controls:</strong></p>
-            <p><kbd>↑↓←→</kbd> D-Pad &nbsp;|&nbsp; <kbd>Z</kbd> A &nbsp;|&nbsp; <kbd>X</kbd> B &nbsp;|&nbsp; <kbd>Enter</kbd> Start &nbsp;|&nbsp; <kbd>Shift</kbd> Select</p>
-        </div>
+    <div id="loading">Loading...</div>
+    <canvas id="canvas" width="240" height="160"></canvas>
+    <div id="controls-legend">
+        <kbd>↑↓←→</kbd> D-Pad 
+        <kbd>Z</kbd> A 
+        <kbd>X</kbd> B 
+        <kbd>Enter</kbd> Start 
+        <kbd>Shift</kbd> Select
     </div>
 
     <script type="module">
         import mGBA from "https://cdn.jsdelivr.net/npm/mgba@0.3.0/dist/mgba.js";
         
         const canvas = document.getElementById('canvas');
-        const loadBtn = document.getElementById('load-btn');
-        const startBtn = document.getElementById('start-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const romInput = document.getElementById('rom-input');
+        const loading = document.getElementById('loading');
         
         let emulator = null;
-        let romLoaded = false;
         
-        // Load default ROM
-        async function loadDefaultROM() {
+        // Load and auto-start ROM
+        async function loadAndStartROM() {
             try {
                 const response = await fetch('Pokemon - Leaf Green Version (U) (V1.1).gba');
-                if (response.ok) {
-                    const romData = await response.arrayBuffer();
-                    await loadROM(romData);
-                    loadBtn.textContent = 'ROM Loaded';
-                    loadBtn.disabled = true;
-                }
+                if (!response.ok) throw new Error('ROM not found');
+                
+                const romData = await response.arrayBuffer();
+                const romPath = '/game.gba';
+                emulator.FS.writeFile(romPath, new Uint8Array(romData));
+                emulator.loadGame(romPath);
+                
+                // Auto-start the game
+                emulator.setMainLoopTiming(1, 60);
+                emulator.resumeGame();
+                
+                loading.style.display = 'none';
             } catch (e) {
-                console.log('Default ROM not found, please load manually');
+                console.error('Failed to load ROM:', e);
+                loading.textContent = 'Error loading ROM';
             }
         }
         
@@ -213,78 +110,8 @@
                 print: console.log,
                 printErr: console.error,
             }));
-            await loadDefaultROM();
+            await loadAndStartROM();
         }
-        
-        // Load ROM
-        async function loadROM(romData) {
-            if (!emulator) return;
-            
-            try {
-                const romPath = '/game.gba';
-                emulator.FS.writeFile(romPath, new Uint8Array(romData));
-                emulator.loadGame(romPath);
-                romLoaded = true;
-                startBtn.disabled = false;
-            } catch (e) {
-                console.error('Failed to load ROM:', e);
-                alert('Failed to load ROM');
-            }
-        }
-        
-        // Event listeners
-        loadBtn.addEventListener('click', () => romInput.click());
-        
-        romInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const romData = await file.arrayBuffer();
-                await loadROM(romData);
-                loadBtn.textContent = 'ROM Loaded';
-            }
-        });
-        
-        startBtn.addEventListener('click', () => {
-            if (emulator && romLoaded) {
-                emulator.setMainLoopTiming(1, 60);
-                emulator.resumeGame();
-                startBtn.textContent = 'Running';
-                startBtn.disabled = true;
-            }
-        });
-        
-        resetBtn.addEventListener('click', () => {
-            if (emulator && romLoaded) {
-                emulator.resetGame();
-            }
-        });
-        
-        // Touch/mouse controls
-        const buttons = document.querySelectorAll('.dpad button, .action-buttons button');
-        const keyMap = {
-            'up': 38, 'down': 40, 'left': 37, 'right': 39,
-            'a': 90, 'b': 88, 'start': 13, 'select': 16
-        };
-        
-        buttons.forEach(btn => {
-            const key = btn.dataset.key;
-            
-            const press = () => {
-                btn.classList.add('active');
-                if (emulator) emulator.keyDown(keyMap[key]);
-            };
-            
-            const release = () => {
-                btn.classList.remove('active');
-                if (emulator) emulator.keyUp(keyMap[key]);
-            };
-            
-            btn.addEventListener('mousedown', press);
-            btn.addEventListener('mouseup', release);
-            btn.addEventListener('mouseleave', release);
-            btn.addEventListener('touchstart', (e) => { e.preventDefault(); press(); });
-            btn.addEventListener('touchend', (e) => { e.preventDefault(); release(); });
-        });
         
         // Keyboard controls
         document.addEventListener('keydown', (e) => {

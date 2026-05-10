@@ -1,0 +1,32 @@
+headersOrigin = "config"
+plugins = []
+redirects = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "/Users/folder1/desktop2/leaf emulate"
+publishOrigin = "config"
+base = "/Users/folder1/desktop2/leaf emulate"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[[headers]]
+for = "/*.gba"
+
+[headers.values]
+Content-Type = "application/octet-stream"
